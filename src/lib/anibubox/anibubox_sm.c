@@ -1,4 +1,4 @@
-#include "../include/anibubox_sm.h"
+#include "../include/anibubox.h"
 
 const anibubox_state_table_t anibubox_state_trans_table[14] = {
 
