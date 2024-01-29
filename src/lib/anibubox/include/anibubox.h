@@ -11,12 +11,21 @@
 #include "led.h"
 #include "button.h"
 #include "pio.h"
+#include "adc.h"
+#include "update.h"
+#include "sleepy_time.h"
+
+#define MAX_STATE_TABLE 15
+#define ABBDEBUG 1
 
 typedef struct{
 
     led_param_t     led_var;
     button_param_t  button_var;
     button_t        arcade_button;
+    adc_params_t    adc_var;
+    update_params_t update_var;
+    sleepy_params_t sleepy_var;
 
 } anibubox_params_t;
 
@@ -36,11 +45,12 @@ typedef enum {
     ABB_WAKE_UP_STATE       = 0x02,
     ABB_SLEEP_STATE         = 0x03,
     ABB_BAT_WARN_STATE      = 0x04,
+    ABB_SERIAL_REQ_STATE    = 0x05,
     // update states
-    ABB_UPDATE_INIT_STATE   = 0x05,
-    ABB_UPDATE_LOOP_STATE   = 0x06,
-    ABB_UPDATE_FAIL_STATE   = 0x07,
-    ABB_UPDATE_SUCC_STATE   = 0x08,
+    ABB_UPDATE_INIT_STATE   = 0x06,
+    ABB_UPDATE_LOOP_STATE   = 0x07,
+    ABB_UPDATE_FAIL_STATE   = 0x08,
+    ABB_UPDATE_SUCC_STATE   = 0x09,
     // for sanity check
     ABB_MAX_STATE           = ABB_UPDATE_SUCC_STATE,
 
@@ -53,15 +63,16 @@ typedef enum {
     ABB_BUTTON_PRESS_EVENT  = 0x02,
     ABB_BATTERY_GOOD_EVENT  = 0x03,
     ABB_BATTERY_LOW_EVENT   = 0x04,
+    ABB_SERIAL_DONE_EVENT   = 0x05,
     // update events
-    ABB_UP_SWITCH_OFF_EVENT = 0x05,
-    ABB_UP_SWITCH_ON_EVENT  = 0x06,
-    ABB_UP_SD_OK_EVENT      = 0x07,
-    ABB_UP_SD_NOT_OK_EVENT  = 0x08,
-    ABB_UP_TIMEOUT_EVENT    = 0x09,
-    ABB_UP_SUCCESS_EVENT    = 0x0A,
+    ABB_UP_SWITCH_OFF_EVENT = 0x06,
+    ABB_UP_SWITCH_ON_EVENT  = 0x07,
+    ABB_UP_SD_OK_EVENT      = 0x08,
+    ABB_UP_SD_NOT_OK_EVENT  = 0x09,
+    ABB_UP_TIMEOUT_EVENT    = 0x0A,
+    ABB_UP_SUCCESS_EVENT    = 0x0B,
     // idle
-    ABB_NO_EVENT            = 0x0B,
+    ABB_NO_EVENT            = 0x0C,
     // for sanity check
     ABB_MAX_EVENT           = ABB_NO_EVENT,
 
@@ -70,13 +81,14 @@ typedef enum {
 typedef struct {
     anibubox_state_e current_state;
     anibubox_event_e event;
-    anibubox_state_e netx_state;
+    anibubox_state_e next_state;
 } anibubox_state_table_t;
 
 typedef struct{
 
     anibubox_params_t anibubox_params;
     anibubox_state_e  anibubox_state; 
+    anibubox_state_e  anibubox_event;
 
 } anibubox_struct_t;
 
@@ -89,10 +101,11 @@ typedef struct {
 
 } anibubox_function_table_t;
 
-extern const anibubox_state_table_t anibubox_state_trans_table[14];
+extern const anibubox_state_table_t anibubox_state_trans_table[MAX_STATE_TABLE];
 
 const anibubox_function_table_t* anibubox_get_func_table(anibubox_state_e abb_state);
 
 anibubox_error_e anibubox_express_state(anibubox_struct_t* pt_abb_struct);
+anibubox_error_e anibubox_set_state(anibubox_struct_t* pt_abb_struct);
 
 #endif

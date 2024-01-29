@@ -19,6 +19,7 @@ typedef struct {
     volatile bool       raw_reading;
     volatile uint8_t    button_samples_to_do;
     volatile absolute_time_t debounce_delay_end;
+    absolute_time_t time_of_last_press;
 
 } button_t;
 
@@ -30,6 +31,5 @@ typedef struct {
 } button_param_t;
 
 void button_init(button_param_t* pt_button_param);
-void updateButton(button_t* pt_button);
 
 #endif

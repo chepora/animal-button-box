@@ -62,7 +62,12 @@ int64_t debounce_callback(alarm_id_t id, void *user_data) {
             if(pt_arcade_button->debounced_value){
                 // call what button is supposed to trigger
                 // should be moved into fn pt inside struct
+                // button needs to do 3 things:
+                // - change led
                 pio_cycle_color();
+                // - change e-ink pic
+                // - record time
+                pt_arcade_button->time_of_last_press = get_absolute_time();
             } 
     }else{
         // alarm will repeat 10 ms after last called(not depending on callback)
