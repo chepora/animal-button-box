@@ -1,14 +1,24 @@
-# Simple Button with Interrupt and LED Example
+# Animal Button Box
 
-Basic button connected to an interrupt and LED example.
-No debouncing to see here.
-A button press toggles the LED and the effects of the missing debouncing can be seen quite clearly.
+Project for [Making Embedded Systems](https://classpert.com/classpertx/courses/making-embedded-systems/)
 
-What can be changed:
-- definition of `LED_PIN`
-- definition of `BUTTON_PIN`
-- if using pull-up resistor for input via defining `PULL_UP_INPUT`, else pull-down will be set
-- disabling the default set Schmitt trigger hysteresis on input via defining `DISABLE_HYSTERESIS`
+It uses among other things:
+ - [Adafruit Feather RP2040](https://learn.adafruit.com/adafruit-feather-rp2040-pico) 
+ - [Bosch BNO055](https://www.bosch-sensortec.com/products/smart-sensor-systems/bno055/)
+ - [Waveshare E-Paper Display](https://www.waveshare.com/wiki/1.54inch_e-Paper_Module)
+
+What is it supposed to do?
+
+Imagine a little cube that you can hold in your hand.
+On its front display you can see an e-ink display displaying the silhouette of a turtle.
+On its top face sits a round arcade button. The device seems to be sleeping.
+You shake the cube and the button lights up and the device emits a squeak.
+You press the button and a new random animal silhouette appears on the screen.
+After you set the cube back on the table, the device purrs and goes back to sleep.
+
+It is work in progress.
+
+## Used Libraries
 
 ## Configuring the environment
 
@@ -41,3 +51,4 @@ If you are using [picotool](https://github.com/raspberrypi/picotool) you can sim
     ```shell
     "PATH_TO_PICOTOOL/picotool load .build/debug/src/console_poc.uf2
     ```
+## License
