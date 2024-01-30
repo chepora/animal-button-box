@@ -1,4 +1,4 @@
-# Animal Button Box
+# Animal 🐢 Button 🔘 Box 📦
 
 Project for [Making Embedded Systems](https://classpert.com/classpertx/courses/making-embedded-systems/)
 
