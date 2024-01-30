@@ -20,6 +20,14 @@ It is a work in progress.
 
 ## Used Libraries
 
+This project uses driver and example code from (Waveshare's E-Paper Repository)[https://github.com/waveshareteam/e-Paper/tree/master].
+
+The project depends on the [RPi Pico SDK V1.5.1](https://github.com/raspberrypi/pico-sdk) which is licensed under [BSD-5 Clause](https://github.com/raspberrypi/pico-sdk?tab=BSD-3-Clause-1-ov-file#readme).
+
+The BNO055 module was heavily influenced by [Adafruit's BNO055 library](https://github.com/adafruit/Adafruit_BNO055) which is licensed under [MIT license](https://github.com/adafruit/Adafruit_BNO055?tab=MIT-1-ov-file).
+
+The serial console module is ~~totally stolen~~heavily influenced from the Elecia White's implementation [here](https://wokwi.com/projects/324879108372693587) and the [corresponding repo](https://github.com/eleciawhite/reusable) which is licensed under an (https://github.com/eleciawhite/reusable?tab=License-1-ov-file)[Unlicense].
+
 ## Configuring the environment
 
 This was built and depends on the [RPi Pico SDK V1.5.1](https://github.com/raspberrypi/pico-sdk)
