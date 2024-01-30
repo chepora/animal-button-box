@@ -59,4 +59,3 @@ If you are using [picotool](https://github.com/raspberrypi/picotool) you can sim
     ```shell
     "PATH_TO_PICOTOOL/picotool load .build/debug/src/console_poc.uf2
     ```
-## License
