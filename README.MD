@@ -20,7 +20,7 @@ It is a work in progress.
 
 ## Used Libraries
 
-This project was developed with the help of driver and example code from (Waveshare's E-Paper Repository)[https://github.com/waveshareteam/e-Paper/tree/master].
+This project was developed with the help of driver and example code from [Waveshare's E-Paper Repository](https://github.com/waveshareteam/e-Paper/tree/master).
 
 The project depends on the [RPi Pico SDK V1.5.1](https://github.com/raspberrypi/pico-sdk) which is licensed under [BSD-5 Clause](https://github.com/raspberrypi/pico-sdk?tab=BSD-3-Clause-1-ov-file#readme).
 
