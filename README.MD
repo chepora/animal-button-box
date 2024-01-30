@@ -16,7 +16,7 @@ You shake the cube and the button lights up and the device emits a squeak.
 You press the button and a new random animal silhouette appears on the screen.  
 After you set the cube back on the table, the device purrs and goes back to sleep.  
 
-It is work in progress.
+It is a work in progress.
 
 ## Used Libraries
 
