@@ -41,7 +41,7 @@ export PICO_SDK_PATH="your_local_path"
 ```
 
 The project is configured for the Adafruit Feather RP2040.
-To change this, please change the follwing line `./CMakeLists.txt` in the projects root directory.
+To change this, please change the following line `./CMakeLists.txt` in the projects root directory.
 
 ```cmake
 set(PICO_BOARD "adafruit_feather_rp2040")
