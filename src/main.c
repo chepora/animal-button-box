@@ -15,7 +15,7 @@ int main(void) {
     stdio_init_all();
 
     // start the second core
-    multicore_launch_core1(core1_loop);
+    // multicore_launch_core1(core1_loop);
 
     anibubox_error_e abb_error = ABB_ALL_GOOD;
 
@@ -80,8 +80,6 @@ void set_params(anibubox_params_t* pt_abb_params){
 void core1_loop(){
 
     uint8_t wait_for_start = 0;
-
-    printf("Animal Button Box here.\n");
 
     // clear all eventually lingering intr
     multicore_fifo_clear_irq();

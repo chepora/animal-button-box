@@ -8,7 +8,7 @@
 #include "hardware/gpio.h"
 #include "hardware/timer.h"
 
-#define SLEEPYDEBUG 1
+#define SLEEPYDEBUG 0
 
 typedef enum {
     SLEEPY_ALL_GOOD        = 0x00,
