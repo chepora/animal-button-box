@@ -30,4 +30,14 @@
 // BUZZER PIN
 #define BUZZER_PIN 24
 
+// EPAPER
+#define EP_SCK_PIN 10
+#define EP_TX_PIN 10
+#define EP_CS_PIN 9
+#define EP_RX_PIN 8
+#define EP_RS_PIN 12
+#define EP_BUSY_PIN 13
+
+#define EP_IMAGE_SIZE 10000
+
 #endif

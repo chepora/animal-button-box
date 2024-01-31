@@ -17,7 +17,8 @@ void local_spi_init(spi_params_t* pt_spi_params){
     gpio_set_dir(pt_spi_params->spi_rs_pin, GPIO_OUT);
     gpio_set_dir(pt_spi_params->spi_busy_pin, GPIO_IN);
 
-    // sett cs high
+    // cs is active low
+    // set cs high
     gpio_put(pt_spi_params->spi_cs_pin, 1);
 
     spi_init(spi1, 4000 * 1000);
@@ -25,6 +26,8 @@ void local_spi_init(spi_params_t* pt_spi_params){
     gpio_set_function(pt_spi_params->spi_sck_pin, GPIO_FUNC_SPI);
     gpio_set_function(pt_spi_params->spi_tx_pin, GPIO_FUNC_SPI);
 
+    // busy line is active high
+    gpio_pull_down(pt_spi_params->spi_busy_pin);
 
     printf("SPI init done.\n");
 }

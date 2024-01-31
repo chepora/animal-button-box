@@ -1,13 +1,20 @@
 #include "../include/button.h"
-#include "../include/pio.h"
+
+#include "pio.h"
+#include "epaper.h"
+
+#define BUDEBUG 0
 
 #define PULL_UP_INPUT
 #define DEBOUNCE_DEL    200
 
 button_t* pt_arcade_button;
+alarm_id_t* pt_button_alarm;
 
 int64_t debounce_callback(alarm_id_t id, void *user_data);
 void button_callback(uint gpio, uint32_t events);
+
+static void button_disable_intr(void);
 
 void button_init(button_param_t* pt_button_param){
 
@@ -23,7 +30,7 @@ void button_init(button_param_t* pt_button_param){
     #ifdef PULL_UP_INPUT
         // if button sits between IO and GND:
         gpio_pull_up(pt_button_param->button_pin);
-        printf("Input on %d set as pull-up.\n", pt_button_param->button_pin);
+        if(BUDEBUG)printf("Input on %d set as pull-up.\n", pt_button_param->button_pin);
 
     #else
         // if button sits between IO and POWER:
@@ -62,10 +69,20 @@ int64_t debounce_callback(alarm_id_t id, void *user_data) {
             if(pt_arcade_button->debounced_value){
                 // call what button is supposed to trigger
                 // should be moved into fn pt inside struct
+
                 // button needs to do 3 things:
                 // - change led
                 pio_cycle_color();
+
                 // - change e-ink pic
+                epaper_paint_next();
+
+                // cancel sleepy_time alarm
+                // it will we restarted higher up
+                // just will return false if the id was not found
+                if(cancel_alarm(*(pt_arcade_button->pt_sleepy_alarm))) *(pt_arcade_button->pt_sleepy_alarm_set) = false;
+                // above bool should be replaced not safe like this
+
                 // - record time
                 pt_arcade_button->time_of_last_press = get_absolute_time();
             } 
@@ -81,7 +98,7 @@ void button_callback(uint gpio, uint32_t events) {
     
     // press detected
     // disable irq for now, remove callback
-    gpio_set_irq_enabled_with_callback(pt_arcade_button->pin, GPIO_IRQ_EDGE_FALL, false, NULL);
+    button_disable_intr();
 
     // get time = now + delay
     pt_arcade_button->debounce_delay_end = make_timeout_time_ms(pt_arcade_button->debounce_time);
@@ -90,6 +107,10 @@ void button_callback(uint gpio, uint32_t events) {
     pt_arcade_button->button_samples_to_do--;
 
     //time to debounce
-    add_alarm_in_ms(pt_arcade_button->debounce_intervall, debounce_callback, NULL, true);
+    *pt_button_alarm = add_alarm_in_ms(pt_arcade_button->debounce_intervall, debounce_callback, NULL, true);
     
+}
+
+static inline void button_disable_intr(void){
+    gpio_set_irq_enabled_with_callback(pt_arcade_button->pin, GPIO_IRQ_EDGE_FALL, false, NULL);
 }

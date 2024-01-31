@@ -122,7 +122,7 @@ UBYTE DEV_Module_Init(void)
     gpio_set_function(EPD_CLK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(EPD_MOSI_PIN, GPIO_FUNC_SPI);
 	
-    printf("DEV_Module_Init OK \r\n");
+    //printf("DEV_Module_Init OK \r\n");
 	return 0;
 }
 

@@ -18,12 +18,14 @@
 static anibubox_error_e abb_init(anibubox_struct_t* pt_abb_struct);
 static anibubox_error_e abb_led_init(anibubox_struct_t* pt_abb_struct);
 static anibubox_error_e abb_init_button(anibubox_struct_t* pt_abb_struct);
+static anibubox_error_e abb_init_epaper(anibubox_struct_t* pt_abb_struct);
 static inline bool abb_is_battery_event(anibubox_struct_t* pt_abb_struct);
 
 static anibubox_error_e abb_start(anibubox_struct_t* pt_abb_struct);
 static inline bool abb_is_update_event(anibubox_struct_t* pt_abb_struct);
 
 static anibubox_error_e abb_wake_up(anibubox_struct_t* pt_abb_struct);
+static anibubox_error_e abb_bno055_init(anibubox_struct_t* pt_abb_struct);
 static anibubox_error_e abb_init_sleepy_time(anibubox_struct_t* pt_abb_struct);
 static inline bool abb_is_sleepy_time(anibubox_struct_t* pt_abb_struct);
 
@@ -94,6 +96,8 @@ static anibubox_error_e abb_init(anibubox_struct_t* pt_abb_struct){
     (void) abb_init_button(pt_abb_struct);
 
     pio_init();
+    
+    piezo_init(pt_abb_struct->anibubox_params.buzzer_pin);
 
     (void) update_switch_init(&pt_abb_struct->anibubox_params.update_var);
 
@@ -101,6 +105,10 @@ static anibubox_error_e abb_init(anibubox_struct_t* pt_abb_struct){
 
     // RGB LED white
     pio_put_white();
+
+    (void) abb_init_epaper(pt_abb_struct);
+
+    (void) abb_init_button(pt_abb_struct);
 
     while(pt_abb_struct->anibubox_state == ABB_INIT_STATE){
 
@@ -139,24 +147,34 @@ static anibubox_error_e abb_wake_up(anibubox_struct_t* pt_abb_struct){
 
     // this is the point the serial console will be responsive
     // init and print hello
+    multicore_fifo_push_blocking(ABB_CORE_1_GO);
+    if(ABBDEBUG) printf("CORE 0 put go into FIFO.\n");
+    sleep_ms(10);
+
 
     // prepare for sleepy time
     (void) abb_init_sleepy_time(pt_abb_struct);
 
+    uint8_t wait_for_song = 0;
+    wait_for_song = piezo_play_hello();
+
+    uint8_t waiting_for_drawing;
+    waiting_for_drawing = epaper_paint_example();
+
     pio_put_green();
+
+    // now configure the movement sensor for any motion interrupt
+    (void) abb_bno055_init(pt_abb_struct);
 
     while (pt_abb_struct->anibubox_state == ABB_WAKE_UP_STATE)
     {   
         // init serial? other core? or here?
 
-        // set sleepy time out 
-        // wait for shake
-
         // check for core 1 fifo
         // only here can serial_log be used
+   
 
         // is time past?
-        // set alarm for sleepy time
         if(abb_is_sleepy_time(pt_abb_struct)) (void) anibubox_set_state(pt_abb_struct);
         sleep_ms(100);
         
@@ -173,16 +191,26 @@ static anibubox_error_e abb_sleep(anibubox_struct_t* pt_abb_struct){
 
     if(pt_abb_struct == NULL) return anibubox_error;
 
-    while (pt_abb_struct->anibubox_state == ABB_SLEEP_STATE)
-    {   
-        // set serial sleep
-        // set interrupt for imu
-        // stop all communications
+    pio_put_red();
+    uint8_t wait_for_song = 0;
+    wait_for_song = piezo_play_goodnight();
+    pio_put_off();
 
-        // wait for shake
-        sleep_ms(100);
+    // WIP!
 
-    }
+    // now everything must be powered down 
+    // except the interrupt on the pin connected to the movement sensor
+    // let us set this interrupt first
+    gpio_set_dormant_irq_enabled(pt_abb_struct->anibubox_params.bno055_var.host_intr_pin, GPIO_IRQ_EDGE_RISE, true);
+
+    // put both clocks to sleep
+
+    // wake up here again
+
+    // clear interrupt
+
+    // change event
+
 
     anibubox_error = ABB_ALL_GOOD;
 
@@ -293,6 +321,9 @@ static anibubox_error_e abb_init_button(anibubox_struct_t* pt_abb_struct){
 
     pt_abb_struct->anibubox_params.arcade_button.time_of_last_press    = get_absolute_time();
 
+    pt_abb_struct->anibubox_params.arcade_button.pt_sleepy_alarm = &pt_abb_struct->anibubox_params.sleepy_var.alarm_id;
+    pt_abb_struct->anibubox_params.arcade_button.pt_sleepy_alarm_set = &pt_abb_struct->anibubox_params.sleepy_var.alarm_set;
+
     pt_abb_struct->anibubox_params.button_var.pt_button = &pt_abb_struct->anibubox_params.arcade_button;
 
     button_init(&pt_abb_struct->anibubox_params.button_var);
@@ -300,6 +331,26 @@ static anibubox_error_e abb_init_button(anibubox_struct_t* pt_abb_struct){
     anibubox_error = ABB_ALL_GOOD;
 
     return anibubox_error;
+}
+
+static anibubox_error_e abb_init_epaper(anibubox_struct_t* pt_abb_struct){
+
+    anibubox_error_e anibubox_error = ABB_NPTR_ERROR;
+
+    if(pt_abb_struct == NULL) return anibubox_error;
+
+    epaper_params_t* pt_epaper_params = &pt_abb_struct->anibubox_params.epaper_var;
+
+    (void) EPD_1IN54_V2_start();
+
+    //epaper_status_e e_paper_status = EPAPER_INIT_ERROR;
+
+    //e_paper_status = epaper_init(pt_epaper_params);
+
+    anibubox_error = ABB_ALL_GOOD;
+
+    return anibubox_error;
+
 }
 
 static inline bool abb_is_battery_event(anibubox_struct_t* pt_abb_struct){
@@ -351,6 +402,52 @@ static inline bool abb_is_update_event(anibubox_struct_t* pt_abb_struct){
     return event;   
 }
 
+static anibubox_error_e abb_bno055_init(anibubox_struct_t* pt_abb_struct){
+
+    anibubox_error_e anibubox_error = ABB_NPTR_ERROR;
+
+    if(pt_abb_struct == NULL) return anibubox_error;
+
+    // get the sleepy_time params
+    BNO055_params_t* pt_bno055_params = &pt_abb_struct->anibubox_params.bno055_var;
+
+    // set gpio on rp2040 at pt_bno055_params->host_intr_pin
+    gpio_init(pt_bno055_params->host_intr_pin);
+    gpio_set_dir(pt_bno055_params->host_intr_pin, GPIO_IN);
+    gpio_pull_down(pt_bno055_params->host_intr_pin);
+
+    // the interupt will be set before going dormant in sleep mode
+
+    (void) BNO055_get_device_id();
+    (void) BNO055_reset_system();
+    sleep_ms(1000);
+    (void) BNO055_get_device_id();
+    (void) BNO055_read_SYS_TRIG();
+
+    (void) BNO055_set_offsets(&pt_bno055_params->offsets);
+
+    power_mode_t req_power_mode = normal;
+    (void) BNO055_set_power_mode(req_power_mode);
+
+    // set fusion mode on BNO055
+    operation_mode_t mode_imu = imu;
+    (void) BNO055_set_operation_mode(mode_imu);
+
+    (void) BNO055_read_SYS_STATUS();
+
+
+    //set ACC AM interrupt on BNO055
+    uint8_t threshold = 1;
+    uint8_t duration  = 1;
+    (void) BNO055_enable_any_motion_intr(threshold, duration);
+
+    (void) BNO055_enable_intr_on_XYZ(1, 1, 1);
+
+    anibubox_error = ABB_ALL_GOOD;
+
+    return anibubox_error;
+}
+
 static anibubox_error_e abb_init_sleepy_time(anibubox_struct_t* pt_abb_struct){
 
     anibubox_error_e anibubox_error = ABB_NPTR_ERROR;
@@ -379,10 +476,13 @@ static inline bool abb_is_sleepy_time(anibubox_struct_t* pt_abb_struct){
     // get the sleepy_time params
     sleepy_params_t* pt_sleepy_params = &pt_abb_struct->anibubox_params.sleepy_var;
 
-    if (!pt_sleepy_params->alarm_set)
-    {
-            (void) sleepy_time_init(pt_sleepy_params);
+    if (!pt_sleepy_params->alarm_set) (void) sleepy_time_init(pt_sleepy_params);
+    
+    if(pt_sleepy_params->is_sleepy_time){
+        pt_abb_struct->anibubox_event = ABB_SLEEPY_TIME_EVENT;
+        event = true;
     }
+
     return event; 
 
 }

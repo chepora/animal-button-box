@@ -17,8 +17,7 @@ typedef struct {
     uint8_t spi_rx_pin;     // data/command - DC
     uint8_t spi_rs_pin;     // reset
     uint8_t spi_busy_pin;   // 
-
-
+ 
 } spi_params_t;
 
 typedef enum {

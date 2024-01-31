@@ -24,6 +24,7 @@ typedef struct {
     absolute_time_t*            pt_last_button_press_time;
     alarm_id_t                  alarm_id;
     bool                        alarm_set;
+    bool                        is_sleepy_time;
 
 } sleepy_params_t;
 

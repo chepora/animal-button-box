@@ -19,7 +19,9 @@ typedef struct {
     volatile bool       raw_reading;
     volatile uint8_t    button_samples_to_do;
     volatile absolute_time_t debounce_delay_end;
-    absolute_time_t time_of_last_press;
+    absolute_time_t     time_of_last_press;
+    alarm_id_t*         pt_sleepy_alarm;
+    bool*               pt_sleepy_alarm_set;
 
 } button_t;
 

@@ -31,5 +31,6 @@ void pio_put_white();
 void pio_put_red();
 void pio_put_green();
 void pio_put_yellow();
+void pio_put_off();
 
 #endif

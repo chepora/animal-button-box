@@ -57,7 +57,7 @@ static void pio_show_color(const struct pio_color* pr_pio_color){
 void pio_cycle_color() {
     
     pio_show_color(&led_colors[current_color]);
-    printf("set color %d\n", current_color);
+    if(PIODEBUG) printf("set color %d\n", current_color);
     if(current_color == LAST_COLOR){
         current_color = 0;
     }else current_color++;
@@ -77,4 +77,8 @@ void pio_put_green() {
 
 void pio_put_yellow() {
     pio_show_color(&led_colors[YELLOW]);
+}
+
+void pio_put_off() {
+    put_pixel(urgb_u32(0, 0, 0));
 }

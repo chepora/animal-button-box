@@ -7,6 +7,9 @@
 #include <stdlib.h>
 
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
+#include "hardware/irq.h"
+#include "hardware/irq.h"
 
 #include "led.h"
 #include "button.h"
@@ -14,9 +17,12 @@
 #include "adc.h"
 #include "update.h"
 #include "sleepy_time.h"
+#include "piezo.h"
+#include "epaper.h"
+#include "bno055.h"
 
 #define MAX_STATE_TABLE 15
-#define ABBDEBUG 1
+#define ABBDEBUG 0
 
 typedef struct{
 
@@ -26,6 +32,9 @@ typedef struct{
     adc_params_t    adc_var;
     update_params_t update_var;
     sleepy_params_t sleepy_var;
+    uint8_t         buzzer_pin;
+    epaper_params_t epaper_var;
+    BNO055_params_t bno055_var;
 
 } anibubox_params_t;
 
@@ -78,10 +87,20 @@ typedef enum {
 
 } anibubox_event_e;
 
+typedef enum {
+
+    ABB_CORE_NOTHING    = 0x00,
+    ABB_CORE_1_GO       = 0x0F,
+    ABB_CORE_1_STOP     = 0xFF,
+
+} anibubox_core_e;
+
 typedef struct {
+
     anibubox_state_e current_state;
     anibubox_event_e event;
     anibubox_state_e next_state;
+
 } anibubox_state_table_t;
 
 typedef struct{
@@ -107,5 +126,10 @@ const anibubox_function_table_t* anibubox_get_func_table(anibubox_state_e abb_st
 
 anibubox_error_e anibubox_express_state(anibubox_struct_t* pt_abb_struct);
 anibubox_error_e anibubox_set_state(anibubox_struct_t* pt_abb_struct);
+
+/*-----------------------------------------------------------------------------
+ *  CORE 1
+ *---------------------------------------------------------------------------*/
+uint8_t anibubox_core1(void);
 
 #endif

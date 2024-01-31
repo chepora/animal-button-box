@@ -1,6 +1,6 @@
 #include "epaper.h"
 
-#define EPDEBUG 1
+#define EPDEBUG 0
 
 UBYTE *BlackImage;
 
