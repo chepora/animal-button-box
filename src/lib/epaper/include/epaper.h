@@ -1,17 +1,19 @@
-#ifndef EPAPER_H__
-#define EPAPER_H_
+#ifndef _EPAPER_H_
+#define _EPAPER_H_
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include "pico/stdlib.h"
-
+#include "../DEV_Config.h"
+#include "../EPD_1in54_V2.h"
+#include "../GUI_Paint.h"
+#include "../ImageData.h"
+#include "../Debug.h"
+#include <stdlib.h> // malloc() free()
 #include "spi.h"
-#include "ImageData.h"
+
+#define EP_IMAGE_SIZE 10000
 
 typedef struct {
 
-    uint8_t* pt_image;
+    uint8_t  image[EP_IMAGE_SIZE];
     uint16_t pic_width;
     uint16_t pic_height;
     uint16_t pic_width_memory;
@@ -39,23 +41,8 @@ typedef struct {
 
 } epaper_params_t;
 
-typedef enum {
-
-    EPAPER_ALL_GOOD             = 0x00,
-    EPAPER_INIT_ERROR           = 0x01,
-    EPAPER_DEV_BUSY             = 0x02,
-    EPAPER_SPI_WRITE_ERROR      = 0x04,
-    EPAPER_SPI_READ_ERROR       = 0x08,
-    EPAPER_GPIO_WRITE_ERROR     = 0x0F,
-    EPAPER_GPIO_READ_ERROR      = 0x10,
-
-} epaper_status_e;
-
-epaper_status_e epaper_init(epaper_params_t* pt_epaper_params);
-epaper_status_e epaper_display_init(epaper_params_t* pt_epaper_params);
-epaper_status_e epaper_clear_display(epaper_params_t* pt_epaper_params);
-epaper_status_e epaper_paint_color(epaper_params_t* pt_epaper_params);
-epaper_status_e epaper_draw_bitmap(epaper_params_t* pt_epaper_params, const unsigned char* image_buffer);
-epaper_status_e epaper_send_to_display(epaper_params_t* pt_epaper_params);
+int EPD_1IN54_V2_start();
+int epaper_paint_example();
+void epaper_paint_next();
 
 #endif
