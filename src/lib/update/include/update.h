@@ -7,7 +7,7 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 
-#define UPDATEDEBUG 1
+#define UPDATEDEBUG 0
 
 typedef enum {
     UPDATE_ALL_GOOD     = 0x00,
