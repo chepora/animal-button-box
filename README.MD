@@ -28,6 +28,8 @@ The BNO055 module was heavily influenced by [Adafruit's BNO055 library](https://
 
 The serial console module is ~~totally stolen~~heavily influenced from the Elecia White's implementation [here](https://wokwi.com/projects/324879108372693587) and the [corresponding repo](https://github.com/eleciawhite/reusable) which is licensed under an [Unlicense](https://github.com/eleciawhite/reusable?tab=License-1-ov-file).
 
+This project started as a collection of small examples, which can be found [over here](https://github.com/chepora/RP2040-examples).
+
 ## Configuring the environment
 
 This was built and depends on the [RPi Pico SDK V1.5.1](https://github.com/raspberrypi/pico-sdk)
@@ -59,4 +61,3 @@ If you are using [picotool](https://github.com/raspberrypi/picotool) you can sim
     ```shell
     "PATH_TO_PICOTOOL/picotool load .build/debug/src/console_poc.uf2
     ```
-### This project started as a collection of small examples, which can be found [over here](https://github.com/chepora/RP2040-examples).
