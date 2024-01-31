@@ -59,3 +59,4 @@ If you are using [picotool](https://github.com/raspberrypi/picotool) you can sim
     ```shell
     "PATH_TO_PICOTOOL/picotool load .build/debug/src/console_poc.uf2
     ```
+### This project started as a collection of small examples, which can be found [over here](https://github.com/chepora/RP2040-examples).
