@@ -8,4 +8,4 @@ gen/
 .vscode/
 
 # please do ignore yourself
-!.gitignore 
+.gitignore 
