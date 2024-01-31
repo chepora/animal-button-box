@@ -5,18 +5,21 @@
 
 #define BRIGTNESS 0.01
 
-#define LAST_COLOR 5
+#define LAST_COLOR 6
+
+#define PIODEBUG 0
 
 uint8_t current_color;
 
-static const struct pio_color led_colors[6] = {
+static const struct pio_color led_colors[7] = {
 
     {.red = 255, .green =   8, .blue = 255}, // 0 - lila
     {.red =  79, .green =   9, .blue = 255}, // 1 - blue
     {.red =  20, .green = 255, .blue =   9}, // 2 - green
     {.red = 150, .green = 150, .blue =  26}, // 3 - yellow
-    {.red = 243, .green = 100, .blue =  78}, // 4 - orange
-    {.red = 243, .green =  56, .blue =  19}, // 5 - red
+    {.red = 255, .green = 255, .blue = 255}, // 4 - white
+    {.red = 243, .green = 100, .blue =  78}, // 5 - orange
+    {.red = 243, .green =  56, .blue =  19}, // 6 - red
 };
 
 
@@ -33,7 +36,7 @@ static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b) {
 
 void pio_init() {
 
-    printf("pio up for WS2812 using pin %d\n", PICO_DEFAULT_WS2812_PIN);
+    if(PIODEBUG)printf("Pio up for WS2812 using pin %d\n", PICO_DEFAULT_WS2812_PIN);
 
     PIO pio = pio0;
     int8_t sm = 0;
@@ -60,12 +63,18 @@ void pio_cycle_color() {
     }else current_color++;
 }
 
-void pio_start_signal() {
+void pio_put_white() {
+    pio_show_color(&led_colors[WHITE]);
+}
 
-    for (size_t i = 0; i <= LAST_COLOR; i++)
-    {
-        pio_show_color(&led_colors[i]);
-        sleep_ms(500);
-    }
-    
+void pio_put_red() {
+    pio_show_color(&led_colors[RED]);
+}
+
+void pio_put_green() {
+    pio_show_color(&led_colors[GREEN]);
+}
+
+void pio_put_yellow() {
+    pio_show_color(&led_colors[YELLOW]);
 }

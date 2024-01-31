@@ -8,8 +8,6 @@
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
 
-#define ADCDEBUG 1
-
 typedef enum {
     ADC_ALL_GOOD        = 0x00,
     ADC_WRITE_ERROR     = 0x0F,

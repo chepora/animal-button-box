@@ -4,7 +4,6 @@ int64_t sleepy_time_callback(alarm_id_t id, void *user_data);
 
 sleepy_state_e sleepy_time_init(sleepy_params_t* pt_sleepy_params){
 
-    //static inline alarm_id_t add_alarm_in_ms(uint32_t ms, alarm_callback_t callback, void *user_data, bool fire_if_past) 
 
     sleepy_state_e sleepy_state = SLEEPY_NPTR_ERROR;
 
@@ -17,7 +16,7 @@ sleepy_state_e sleepy_time_init(sleepy_params_t* pt_sleepy_params){
     pt_sleepy_params->time_of_alarm = delayed_by_ms(time_of_last_press, pt_sleepy_params->sleepy_delay_ms);
 
     // set alarm with callback
-    // alarm needs to be past data like pointer to last button press time
+    // alarm needs to be passsed pointerto last button press time
 
     pt_sleepy_params->alarm_id = add_alarm_at(pt_sleepy_params->time_of_alarm , &sleepy_time_callback, pt_sleepy_params, true);
     if(SLEEPYDEBUG)printf("sleepy_time_alarm was set.\n");

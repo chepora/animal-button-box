@@ -1,5 +1,7 @@
 #include "../include/adc.h"
 
+#define ADCDEBUG 0
+
 adc_state_e local_adc_init(adc_params_t* pt_adc_params){
 
     adc_state_e adc_state = ADC_READ_ERROR;
@@ -32,7 +34,6 @@ adc_state_e adc_read_battery(adc_params_t* pt_adc_params){
     if(ADCDEBUG)printf("Raw value: 0x%03x, voltage: %f V\n", raw_result, result);
 
     if(result >= pt_adc_params->vol_thres){
-
         adc_state = ADC_ALL_GOOD;
     }
 

@@ -19,12 +19,15 @@
 // ADC
 #define BATTERY_PIN 13
 #define ADC_INST    0
-#define VOLT_THRES  3.3
+#define VOLT_THRES  1.0 // too low -> only for testing
 
 // UPDATE
 #define SWITCH_PIN  27
 
 // SLEEPY TIME
 #define SLEEPY_TIME_MS 10 * 1000
+
+// BUZZER PIN
+#define BUZZER_PIN 24
 
 #endif

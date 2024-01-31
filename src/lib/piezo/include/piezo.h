@@ -1,5 +1,5 @@
-#ifndef PWM_H__
-#define PWM_H_
+#ifndef PIEZO_H__
+#define PIEZO_H_
 
 #include <stdio.h>
 #include "pico/stdlib.h"
@@ -9,7 +9,7 @@
 
 #include "pitches.h"
 
-void local_pwm_init(uint8_t pwm_pin, uint8_t max_duty_cycle);
-void pwm_loop(uint8_t pwm_pin, uint8_t max_duty_cycle);
+void piezo_init(uint8_t pwm_pin);
+void piezo_play_freq(uint8_t pwm_pin, float freq);
 
 #endif

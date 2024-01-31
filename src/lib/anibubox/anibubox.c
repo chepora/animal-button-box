@@ -16,9 +16,19 @@
  *  STATIC DECLARATIONS
  *---------------------------------------------------------------------------*/
 static anibubox_error_e abb_init(anibubox_struct_t* pt_abb_struct);
+static anibubox_error_e abb_led_init(anibubox_struct_t* pt_abb_struct);
+static anibubox_error_e abb_init_button(anibubox_struct_t* pt_abb_struct);
+static inline bool abb_is_battery_event(anibubox_struct_t* pt_abb_struct);
+
 static anibubox_error_e abb_start(anibubox_struct_t* pt_abb_struct);
+static inline bool abb_is_update_event(anibubox_struct_t* pt_abb_struct);
+
 static anibubox_error_e abb_wake_up(anibubox_struct_t* pt_abb_struct);
+static anibubox_error_e abb_init_sleepy_time(anibubox_struct_t* pt_abb_struct);
+static inline bool abb_is_sleepy_time(anibubox_struct_t* pt_abb_struct);
+
 static anibubox_error_e abb_sleep(anibubox_struct_t* pt_abb_struct);
+
 static anibubox_error_e abb_bat_warn(anibubox_struct_t* pt_abb_struct);
 
 static anibubox_error_e abb_update_init(anibubox_struct_t* pt_abb_struct);
@@ -41,7 +51,7 @@ static const anibubox_function_table_t anibubox_function_table[] =
 
 };
 
-static void make_button(anibubox_struct_t* pt_abb_struct);
+
 
 /*-----------------------------------------------------------------------------
  *  PUBLIC DEFINITIONS
@@ -77,33 +87,24 @@ static anibubox_error_e abb_init(anibubox_struct_t* pt_abb_struct){
 
     anibubox_error = ABB_ALL_GOOD;
 
-    led_init(&pt_abb_struct->anibubox_params.led_var);
-    make_button(pt_abb_struct);
-    button_init(&pt_abb_struct->anibubox_params.button_var);
+    // error handling is not fully implemented yet
+    // ignoring returns for now
+
+    (void) abb_led_init(pt_abb_struct);
+    (void) abb_init_button(pt_abb_struct);
+
     pio_init();
 
     (void) update_switch_init(&pt_abb_struct->anibubox_params.update_var);
 
-    adc_state_e adc_state = ADC_ALL_GOOD;
+    (void) local_adc_init(&pt_abb_struct->anibubox_params.adc_var);
 
-    adc_state = local_adc_init(&pt_abb_struct->anibubox_params.adc_var);
-
-    pio_start_signal();
+    // RGB LED white
+    pio_put_white();
 
     while(pt_abb_struct->anibubox_state == ABB_INIT_STATE){
 
-
-        // read battery
-        adc_state = adc_read_battery(&pt_abb_struct->anibubox_params.adc_var);
-
-        // depending on battery read set event
-        // pt_abb_struct->anibubox_state == ABB_BATTERY_LOW_EVENT;
-        pt_abb_struct->anibubox_event = ABB_BATTERY_GOOD_EVENT;
-
-        if(pt_abb_struct->anibubox_event != ABB_NO_EVENT){
-            // get function through event
-            anibubox_error = anibubox_set_state(pt_abb_struct);
-        }
+        if(abb_is_battery_event(pt_abb_struct)) (void) anibubox_set_state(pt_abb_struct);
         sleep_ms(100);
     }
 
@@ -120,20 +121,8 @@ static anibubox_error_e abb_start(anibubox_struct_t* pt_abb_struct){
 
     while (pt_abb_struct->anibubox_state == ABB_START_STATE)
     {   
-        // check update pin
-        update_switch_on = gpio_get(pt_abb_struct->anibubox_params.update_var.switch_pin);
-        if(ABBDEBUG) printf("update_switch_on is:  %d\n", update_switch_on);
-
-        if (update_switch_on){
-            pt_abb_struct->anibubox_event = ABB_UP_SWITCH_ON_EVENT;
-        }else{
-            pt_abb_struct->anibubox_event = ABB_UP_SWITCH_OFF_EVENT;
-        }
-
-        if(pt_abb_struct->anibubox_event != ABB_NO_EVENT){
-            // get function through event
-            anibubox_error = anibubox_set_state(pt_abb_struct);
-        }
+        
+        if(abb_is_update_event(pt_abb_struct)) (void) anibubox_set_state(pt_abb_struct);
         sleep_ms(100);
     }
     
@@ -148,12 +137,13 @@ static anibubox_error_e abb_wake_up(anibubox_struct_t* pt_abb_struct){
 
     if(pt_abb_struct == NULL) return anibubox_error;
 
-    sleepy_params_t* pt_sleepy_params = &pt_abb_struct->anibubox_params.sleepy_var;
+    // this is the point the serial console will be responsive
+    // init and print hello
 
-    // give sleepy module the address of the button press time
-    pt_sleepy_params->pt_last_button_press_time = &(pt_abb_struct->anibubox_params.arcade_button.time_of_last_press);
+    // prepare for sleepy time
+    (void) abb_init_sleepy_time(pt_abb_struct);
 
-    sleepy_state_e sleepy_state = SLEEPY_ALL_GOOD;
+    pio_put_green();
 
     while (pt_abb_struct->anibubox_state == ABB_WAKE_UP_STATE)
     {   
@@ -161,17 +151,15 @@ static anibubox_error_e abb_wake_up(anibubox_struct_t* pt_abb_struct){
 
         // set sleepy time out 
         // wait for shake
-        sleep_ms(100);
 
-        //check for core 1 fifo
+        // check for core 1 fifo
         // only here can serial_log be used
 
         // is time past?
         // set alarm for sleepy time
-        if (!pt_sleepy_params->alarm_set)
-        {
-            anibubox_error = sleepy_time_init(pt_sleepy_params);
-        }
+        if(abb_is_sleepy_time(pt_abb_struct)) (void) anibubox_set_state(pt_abb_struct);
+        sleep_ms(100);
+        
     }
 
     anibubox_error = ABB_ALL_GOOD;
@@ -207,6 +195,10 @@ static anibubox_error_e abb_bat_warn(anibubox_struct_t* pt_abb_struct){
 
     if(pt_abb_struct == NULL) return anibubox_error;
 
+    pio_put_red();
+
+    // PLACEHOLDER
+
     anibubox_error = ABB_ALL_GOOD;
 
     return anibubox_error;
@@ -219,6 +211,10 @@ static anibubox_error_e abb_update_init(anibubox_struct_t* pt_abb_struct){
 
     if(pt_abb_struct == NULL) return anibubox_error;
 
+    pio_put_yellow();
+
+    // PLACEHOLDER
+
     anibubox_error = ABB_ALL_GOOD;
 
     return anibubox_error;
@@ -229,6 +225,8 @@ static anibubox_error_e abb_update_loop(anibubox_struct_t* pt_abb_struct){
     anibubox_error_e anibubox_error = ABB_NPTR_ERROR;
 
     if(pt_abb_struct == NULL) return anibubox_error;
+
+    // PLACEHOLDER
 
     anibubox_error = ABB_ALL_GOOD;
 
@@ -241,6 +239,8 @@ static anibubox_error_e abb_update_fail(anibubox_struct_t* pt_abb_struct){
 
     if(pt_abb_struct == NULL) return anibubox_error;
 
+    // PLACEHOLDER
+
     anibubox_error = ABB_ALL_GOOD;
 
     return anibubox_error;
@@ -252,13 +252,35 @@ static anibubox_error_e abb_update_success(anibubox_struct_t* pt_abb_struct){
 
     if(pt_abb_struct == NULL) return anibubox_error;
 
+    // PLACEHOLDER
+
     anibubox_error = ABB_ALL_GOOD;
 
     return anibubox_error;
 }
 
 
-static void make_button(anibubox_struct_t* pt_abb_struct){
+static anibubox_error_e abb_led_init(anibubox_struct_t* pt_abb_struct){
+
+    anibubox_error_e anibubox_error = ABB_NPTR_ERROR;
+
+    if(pt_abb_struct == NULL) return anibubox_error;
+
+    led_init(&pt_abb_struct->anibubox_params.led_var);
+    led_blink(4, 250);
+    led_on();
+
+    anibubox_error = ABB_ALL_GOOD;
+
+    return anibubox_error;
+
+}
+
+static anibubox_error_e abb_init_button(anibubox_struct_t* pt_abb_struct){
+
+    anibubox_error_e anibubox_error = ABB_NPTR_ERROR;
+
+    if(pt_abb_struct == NULL) return anibubox_error;
 
     pt_abb_struct->anibubox_params.arcade_button.pin = pt_abb_struct->anibubox_params.button_var.button_pin;
     pt_abb_struct->anibubox_params.arcade_button.debounced_value   = false;
@@ -272,4 +294,95 @@ static void make_button(anibubox_struct_t* pt_abb_struct){
     pt_abb_struct->anibubox_params.arcade_button.time_of_last_press    = get_absolute_time();
 
     pt_abb_struct->anibubox_params.button_var.pt_button = &pt_abb_struct->anibubox_params.arcade_button;
+
+    button_init(&pt_abb_struct->anibubox_params.button_var);
+
+    anibubox_error = ABB_ALL_GOOD;
+
+    return anibubox_error;
+}
+
+static inline bool abb_is_battery_event(anibubox_struct_t* pt_abb_struct){
+
+    bool event = false;
+
+    adc_state_e adc_state;
+
+    // read battery
+    adc_state = adc_read_battery(&pt_abb_struct->anibubox_params.adc_var);
+
+    switch (adc_state)
+    {
+    case ADC_ALL_GOOD:
+        pt_abb_struct->anibubox_event = ABB_BATTERY_GOOD_EVENT;
+        event = true;
+        break;
+
+    case ADC_THRES_WARNING:
+        pt_abb_struct->anibubox_state == ABB_BATTERY_LOW_EVENT;
+        event = true;
+        break;
+    
+    default:
+        pt_abb_struct->anibubox_state == ABB_NO_EVENT;
+        event = false;
+        break;
+    }
+
+    return event;   
+}
+
+static inline bool abb_is_update_event(anibubox_struct_t* pt_abb_struct){
+
+    bool event = false;
+
+    // check update pin
+    uint8_t update_switch = gpio_get(pt_abb_struct->anibubox_params.update_var.switch_pin);
+
+    if(ABBDEBUG) printf("update_switch_on is:  %d\n", update_switch);
+    if (update_switch){
+        pt_abb_struct->anibubox_event = ABB_UP_SWITCH_ON_EVENT;
+        event = true;
+    }else{
+        pt_abb_struct->anibubox_event = ABB_UP_SWITCH_OFF_EVENT;
+        event = true;
+    }
+
+    return event;   
+}
+
+static anibubox_error_e abb_init_sleepy_time(anibubox_struct_t* pt_abb_struct){
+
+    anibubox_error_e anibubox_error = ABB_NPTR_ERROR;
+
+    if(pt_abb_struct == NULL) return anibubox_error;
+
+    // get the sleepy_time params
+    sleepy_params_t* pt_sleepy_params = &pt_abb_struct->anibubox_params.sleepy_var;
+
+    // give sleepy module the address of the button press time
+    pt_sleepy_params->pt_last_button_press_time = &(pt_abb_struct->anibubox_params.arcade_button.time_of_last_press);
+
+    sleepy_state_e sleepy_state = SLEEPY_ALL_GOOD;
+
+    anibubox_error = ABB_ALL_GOOD;
+
+    return anibubox_error;
+
+
+}
+
+static inline bool abb_is_sleepy_time(anibubox_struct_t* pt_abb_struct){
+
+    bool event = false;
+
+    // get the sleepy_time params
+    sleepy_params_t* pt_sleepy_params = &pt_abb_struct->anibubox_params.sleepy_var;
+
+    if (!pt_sleepy_params->alarm_set)
+    {
+            (void) sleepy_time_init(pt_sleepy_params);
+    }
+    return event; 
+
 }

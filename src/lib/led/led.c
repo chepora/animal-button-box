@@ -3,7 +3,7 @@
 #define ON  1
 #define OFF 0
 
-uint8_t chosen_led_pin = 0;
+static uint8_t chosen_led_pin = 0;
 
 void led_init(led_param_t* pt_led_param){
 
@@ -13,14 +13,14 @@ void led_init(led_param_t* pt_led_param){
 
 }
 
-void led_on(uint8_t led_pin){
+void led_on(){
 
-    gpio_put(led_pin, ON);
+    gpio_put(chosen_led_pin, ON);
 }
 
-void led_off(uint8_t led_pin){
+void led_off(){
 
-    gpio_put(led_pin, OFF);
+    gpio_put(chosen_led_pin, OFF);
 }
 
 void led_toggle(){
@@ -35,11 +35,13 @@ void led_toggle(){
     
 }
 
-void led_blink(uint8_t led_pin, uint32_t blink_time_ms){
+void led_blink(uint8_t times, uint32_t blink_time_ms){
 
-    gpio_put(led_pin, ON);
-    sleep_ms(250);
-    gpio_put(led_pin, OFF);
-    sleep_ms(250);
-    
+    for (size_t i = 0; i < times; i++)
+    {
+        gpio_put(chosen_led_pin, ON);
+        sleep_ms(blink_time_ms);
+        gpio_put(chosen_led_pin, OFF);
+        sleep_ms(blink_time_ms);
+    }
 }

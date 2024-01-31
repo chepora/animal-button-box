@@ -37,7 +37,7 @@ int main(void) {
         abb_error = anibubox_express_state(pt_abb_struct);
     }
 
-    // error handling here
+    // error handling to be implemented here
 
 }
 
@@ -49,7 +49,7 @@ void set_params(anibubox_params_t* pt_abb_params){
 
     pt_abb_params->adc_var.pin              = BATTERY_PIN;
     pt_abb_params->adc_var.adc_inst         = ADC_INST;
-    pt_abb_params->adc_var.vol_thres        = 3.3;
+    pt_abb_params->adc_var.vol_thres        = VOLT_THRES;
 
     pt_abb_params->update_var.switch_pin    = SWITCH_PIN;
 
