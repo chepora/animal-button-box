@@ -1,5 +1,7 @@
 #include "../include/i2c.h"
 
+#define I2CDEBUG 0
+
 void default_i2c_init(){
 
     i2c_init(i2c_default, 400 * 1000);
@@ -10,7 +12,7 @@ void default_i2c_init(){
     gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
-    printf("I2C init done.\n");
+    if(I2CDEBUG) printf("I2C init done.\n");
 }
 
 I2C_STATE_T default_i2c_reg_write( 

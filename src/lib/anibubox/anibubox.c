@@ -147,10 +147,11 @@ static anibubox_error_e abb_wake_up(anibubox_struct_t* pt_abb_struct){
 
     // this is the point the serial console will be responsive
     // init and print hello
-    multicore_fifo_push_blocking(ABB_CORE_1_GO);
-    if(ABBDEBUG) printf("CORE 0 put go into FIFO.\n");
-    sleep_ms(10);
+    //multicore_fifo_push_blocking(ABB_CORE_1_GO);
+    //if(ABBDEBUG) printf("CORE 0 put go into FIFO.\n");
+    //sleep_ms(10);
 
+    printf("Animal Button Box here.\n");
 
     // prepare for sleepy time
     (void) abb_init_sleepy_time(pt_abb_struct);
@@ -164,7 +165,12 @@ static anibubox_error_e abb_wake_up(anibubox_struct_t* pt_abb_struct){
     pio_put_green();
 
     // now configure the movement sensor for any motion interrupt
-    (void) abb_bno055_init(pt_abb_struct);
+    //
+    // WIP 
+    // needs to be fixed
+    //
+    //abb_bno055_init(pt_abb_struct);
+
 
     while (pt_abb_struct->anibubox_state == ABB_WAKE_UP_STATE)
     {   
@@ -173,7 +179,6 @@ static anibubox_error_e abb_wake_up(anibubox_struct_t* pt_abb_struct){
         // check for core 1 fifo
         // only here can serial_log be used
    
-
         // is time past?
         if(abb_is_sleepy_time(pt_abb_struct)) (void) anibubox_set_state(pt_abb_struct);
         sleep_ms(100);
@@ -411,6 +416,8 @@ static anibubox_error_e abb_bno055_init(anibubox_struct_t* pt_abb_struct){
     // get the sleepy_time params
     BNO055_params_t* pt_bno055_params = &pt_abb_struct->anibubox_params.bno055_var;
 
+    (void) BNO055_init(&pt_abb_struct->anibubox_params.bno055_var);
+
     // set gpio on rp2040 at pt_bno055_params->host_intr_pin
     gpio_init(pt_bno055_params->host_intr_pin);
     gpio_set_dir(pt_bno055_params->host_intr_pin, GPIO_IN);
@@ -435,7 +442,6 @@ static anibubox_error_e abb_bno055_init(anibubox_struct_t* pt_abb_struct){
 
     (void) BNO055_read_SYS_STATUS();
 
-
     //set ACC AM interrupt on BNO055
     uint8_t threshold = 1;
     uint8_t duration  = 1;
@@ -444,6 +450,7 @@ static anibubox_error_e abb_bno055_init(anibubox_struct_t* pt_abb_struct){
     (void) BNO055_enable_intr_on_XYZ(1, 1, 1);
 
     anibubox_error = ABB_ALL_GOOD;
+    if(ABBDEBUG) printf("abb_bno055_init done\n");
 
     return anibubox_error;
 }
@@ -465,7 +472,6 @@ static anibubox_error_e abb_init_sleepy_time(anibubox_struct_t* pt_abb_struct){
     anibubox_error = ABB_ALL_GOOD;
 
     return anibubox_error;
-
 
 }
 

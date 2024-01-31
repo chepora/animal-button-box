@@ -2,6 +2,8 @@
 
 #define IMU_INTR_PIN 28
 
+#define BNODEBUG 0
+
 const bool ENABLED  = true;
 const bool DISABLED = false;
 
@@ -27,12 +29,20 @@ static inline uint8_t value_into_reg(uint8_t value, uint8_t reg, uint8_t mask, u
 
 BNO055_state_e BNO055_init(BNO055_params_t pt_BNO055_var){
 
+    BNO055_state_e BNO055_state = BNO055_WRITE_ERROR;
+
     pt_BNO055_var.offsets = BNO055_offsets;
 
     // default i2c is defined via board file
     default_i2c_init();
     // Power-on-reset time for the BNO055 is 650 ms. Give it time to start.
     sleep_ms(650);
+
+    if(BNODEBUG) printf("BNO055 Done\r\n");
+
+    BNO055_state = BNO055_ALL_GOOD;
+
+    return BNO055_state;
 }
 
 void BNO055_test(){
@@ -146,10 +156,10 @@ BNO055_state_e BNO055_get_device_id(){
     BNO055_state =  default_i2c_reg_read(BNO055_ADDR, BNO055_CHIP_ID_ADDR, data, 1);
 
     if (data[0] != BNO055_CHIP_ID) {
-        printf("ERROR: Could not communicate with BNO055\r\n");
-        printf("Data read: %x\r\n", data[0]);
+        if(BNODEBUG) printf("ERROR: Could not communicate with BNO055\r\n");
+        if(BNODEBUG) printf("Data read: %x\r\n", data[0]);
     }else{
-        printf("Found device with device id %x\n", BNO055_CHIP_ID);
+        if(BNODEBUG) printf("Found device with device id %x\n", BNO055_CHIP_ID);
 
     }
 
@@ -325,7 +335,7 @@ BNO055_state_e BNO055_enable_any_motion_intr(uint8_t threshold, uint8_t duration
     operation_mode_t mode_imu = imu;
     BNO055_state = BNO055_set_operation_mode(mode_imu);
 
-    printf("BNO055 ACC AM Interrupt set.\n");
+    if(BNODEBUG) printf("BNO055 ACC AM Interrupt set.\n");
 
     return BNO055_state;
 }
@@ -359,7 +369,7 @@ BNO055_state_e BNO055_enable_intr_on_XYZ(uint8_t x, uint8_t y, uint8_t z){
      * --------------------------------------------------------- */
     sleep_ms(25);
 
-    printf("BNO055 enabled interrupt on axis X: %d, Y: %d, Z: %d.\n", x, y, z);
+    if(BNODEBUG) printf("BNO055 enabled interrupt on axis X: %d, Y: %d, Z: %d.\n", x, y, z);
 
     // go back to fprevious mode
     operation_mode_t mode_imu = imu;
@@ -426,7 +436,7 @@ BNO055_state_e BNO055_reset_system(void){
      * --------------------------------------------------------- */
     sleep_ms(25);
 
-    printf("BNO055 triggered system reset.\n");
+    if(BNODEBUG) printf("BNO055 triggered system reset.\n");
 
     return BNO055_state;
 }
@@ -502,7 +512,7 @@ BNO055_state_e BNO055_set_offsets(BNO055_offsets_t* pt_BNO055_offsets){
     operation_mode_t mode_imu = acconly;
     BNO055_state = BNO055_set_operation_mode(mode_imu);
 
-    printf("BNO055 set offsets.\n");
+    if(BNODEBUG) printf("BNO055 set offsets.\n");
 
     return BNO055_state;
 }
@@ -519,7 +529,7 @@ BNO055_state_e BNO055_read_SYS_STATUS(void){
     uint8_t reg = 0x00;
     BNO055_state = default_i2c_reg_read(BNO055_ADDR, BNO055_SYS_TRIGGER_ADDR, &reg, 1);
 
-    printf("BNO055 SYS_STATUS read: 0.%02x.\n", reg);
+    if(BNODEBUG) printf("BNO055 SYS_STATUS read: 0.%02x.\n", reg);
 
     return BNO055_state;
 }
@@ -538,7 +548,7 @@ BNO055_state_e BNO055_read_SYS_TRIG(void){
     BNO055_state = default_i2c_reg_read(BNO055_ADDR, BNO055_SYS_TRIGGER_ADDR, &reg, 1);
 
 
-    printf("BNO055 SYS_TRIGGER read: 0.%02x.\n", reg);
+    if(BNODEBUG) printf("BNO055 SYS_TRIGGER read: 0.%02x.\n", reg);
 
     return BNO055_state;
 }
@@ -555,10 +565,10 @@ BNO055_state_e BNO055_read_INT_STA(void){
     uint8_t reg = 0;
     BNO055_state = default_i2c_reg_read(BNO055_ADDR, BNO055_INTR_STAT_ADDR, &reg, 1);
 
-    printf("BNO055 INT_STA read: 0.%02x.\n", reg);
+    if(BNODEBUG) printf("BNO055 INT_STA read: 0.%02x.\n", reg);
 
     reg = ((reg & BNO055_INTR_STAT_ACC_ANY_MOTION_MSK) >> BNO055_INTR_STAT_ACC_ANY_MOTION_POS);
-    printf("BNO055 INTR_STAT_ACC_ANY read: 0.%02x.\n", reg);
+    if(BNODEBUG) printf("BNO055 INTR_STAT_ACC_ANY read: 0.%02x.\n", reg);
 
     return BNO055_state;
 }
